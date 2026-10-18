@@ -1,0 +1,33 @@
+# Free hosting: runs hourly through the afternoon/evening (US Eastern).
+# Each run checks the NHL scoreboard and exits in seconds unless PIT is live
+# or drops the puck within ~100 min; then it stays up until the final horn.
+name: dunnbot
+
+on:
+  schedule:
+    # 14:00-02:00 UTC = 10am-10pm ET (EDT) / 9am-9pm (EST)
+    - cron: "5 0-2,14-23 * * *"
+  workflow_dispatch: {}
+
+# One game-day run at a time; later hourly runs queue, then see the game is
+# over (or still live and pick up where a crashed run left off).
+concurrency:
+  group: dunnbot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet .
+      - name: Run DunnBot for today's game
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DUNNBOT_CHANNEL_ID: ${{ secrets.DUNNBOT_CHANNEL_ID }}
+          DUNNBOT_GAME_MODE: "1"
+        run: python -m dunnbot.bot

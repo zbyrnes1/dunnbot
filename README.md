@@ -24,7 +24,22 @@ Penguins fall behind by exactly 2 goals in a live game.
    ```
    Optional: `DUNNBOT_POLL_SECS` (default 60, minimum 30).
 
-## Deploy on Railway (works from a phone)
+## Free hosting: GitHub Actions (default)
+`.github/workflows/dunnbot.yml` runs hourly from about 10am to 10pm ET. Each run
+checks the scoreboard and exits within seconds unless the Pens are live or face
+off within ~100 minutes; then it stays connected until the final horn. Free
+because the repo is public; the token lives in encrypted repo secrets.
+
+Setup (phone works): repo **Settings → Secrets and variables → Actions → New
+repository secret**, add `DISCORD_TOKEN` and `DUNNBOT_CHANNEL_ID`. Test any time
+from **Actions → dunnbot → Run workflow** (exits quickly if there's no game).
+
+Caveats: GitHub can start scheduled runs 5-15 min late, and it pauses schedules
+in a repo with no commits for 60 days (it emails you first; re-enable from the
+Actions tab). If a run dies mid-game, the next hourly run resumes it and may
+repost if the Pens are down 2 at that moment.
+
+## Paid alternative: Railway
 1. railway.com → sign in with GitHub → New Project → Deploy from GitHub repo → `dunnbot`.
 2. Service → Variables: add `DISCORD_TOKEN` and `DUNNBOT_CHANNEL_ID`.
 3. It redeploys automatically; check Deployments → logs for `logged in as`.
